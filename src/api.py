@@ -1,3 +1,8 @@
+'''
+Created on Jan 19, 2011
+
+@author: rucney
+'''
 #! coding: utf-8
 # pylint: disable-msg=W0311
 import time
@@ -7,8 +12,11 @@ import settings
 
 DATABASE = pymongo.Connection(settings.mongodb_nodes).infoging.info
 GRAPH = pymongo.Connection(settings.mongodb_nodes).infoging.graph
+EXAM = pymongo.Connection(settings.mongodb_nodes).infoging.example
 
 def insert(info):
+  # insert to database
+  
   time = info.get('time')
   time_used = info.get('time_used')
   time_list = range(time - time_used, time + 1)
@@ -21,24 +29,27 @@ def insert(info):
                               "bytes_in": bytes_in,
                               'request': 1}}, 
                     upsert=True)
-    
+
   return DATABASE.insert(info)
 
+def get_total(t):
+  # mongodb group by
   
-def get_stats(group, t):
-  t0 = time.time()
+  t0 = int(time.time())
   t1 = t0 - t
-  data = list(GRAPH.find({"time": {"$gte": t1}, 'group':group}))
-  times = [i.get('time') for i in data]
-  print len(times)
-  print times
-  print times[-1] - times[0]
-#  for i in range(t1, t0):
-#    if i not in times:
-#      data.append({"time": i, "group": group, "bytes_out": 0, "bytes_in": 0, "request": 0})
-#  print len(data)
-  return data
+  res = GRAPH.group(key={"time": True},
+  condition={"time": {"$gte": t1}},
+  initial={'total_bytes_out': 0, 'total_bytes_in': 0, 'total_request': 0},
+  reduce="function(info, prev) { prev.total_bytes_out += info.bytes_out; prev.total_bytes_in +=info.bytes_in; prev.total_request += info.request }"
+  )
+  res.sort(key=lambda k: k['time'])
+  return res
+
+def get_stats(group, t):
+  # mongodb time, group
   
-#time>time
-if __name__ == "__main__": 
-  get_stats('hosting', 3600)
+  t0 = int(time.time())
+  t1 = t0 - t
+  data = list(GRAPH.find({"time": {"$gte": t1}, 'group':group})) 
+  data.sort(key=lambda k: k['time'])
+  return data
