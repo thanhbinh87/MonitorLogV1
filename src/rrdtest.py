@@ -10,15 +10,15 @@ import time
 
 from pyrrd.rrd import RRD, RRA, DS
 from pyrrd.graph import DEF, CDEF, VDEF
-from pyrrd.graph import LINE, GPRINT
+from pyrrd.graph import LINE, GPRINT, AREA
 from pyrrd.graph import ColorAttributes, Graph
 
-def draw_graph(data):
+def draw_graph(data, group):
   ## Graph bytes_in, bytes_out, request, by time+group
-  filename = 'network.rrd' 
-  graphfile_traffic = 'traffic.png' 
+  filename = 'network%s.rrd' %group
+  graphfile_traffic = 'traffic%s.png' %group
 #  graphfileLg_traffic = 'traffic-large.png'
-  graphfile_request = 'request.png'
+  graphfile_request = 'request%s.png' %group
 #  graphfileLg_request = 'request-large'
   
   #define times
@@ -29,13 +29,30 @@ def draw_graph(data):
   quarter = month * 3
   half = 365 * day / 2
   year = 365 * day
-  delta = 10 * hour
+  delta = 5 * hour
   step = 10
   endTime = int(time.time())
-  startTime = endTime - 360000
+  startTime = endTime - 36000
   maxSteps = int((endTime-startTime)/step)
   
   # create RRD file
+ 
+#  DSTYPE
+#  Counter:Use this format with value of snmp MIB like traffic counter or 
+#  packet number for a interface. 
+#  Gauge:Use this format for value like temperature,  indicator of pressure.
+#  Derive:Use this format if you variation or delta between a moment and 
+#  an another moment like the rate of of people entering or leaving a
+#  room and derive works exactly like COUNTER but without overflow checks.
+#  Absolute:Use this format when you count the number of mail after an alert. 
+#   
+#  HEARTBEAT
+#  Is define the frequency between each update of value in the database but some time
+#  it is possible to have UNKNOWN value.
+#  MIN AND MAX are optional parameters witch define the range of your data source (DS).
+#  If your value is out of the range the value will be defined as UNKNOWN.
+#  If you don not know exactly the range of you value you can set the MIN and MAX value with 
+#  U for unknown
   dss = []
   ds1 = DS(dsName='bytes_out', dsType='ABSOLUTE', heartbeat=300)
   ds2 = DS(dsName='bytes_in', dsType='ABSOLUTE', heartbeat=300)
@@ -70,22 +87,25 @@ def draw_graph(data):
   def1 = DEF(rrdfile=myRRD.filename, vname='output', dsName=ds1.name)
   def2 = DEF(rrdfile=myRRD.filename, vname='input', dsName=ds2.name)
   def3 = DEF(rrdfile=myRRD.filename, vname='request', dsName=ds3.name)
-  cdef = CDEF(vname='outbits', rpn='%s,8,*' % def1.vname)
-  vdef = VDEF(vname='max', rpn='%s,MAXIMUM' % cdef.vname)
+  cdef1 = CDEF(vname='outbits', rpn='%s,8,*' % def1.vname)
+  cdef2 = CDEF(vname='inbits', rpn='%s,8,*' % def2.vname)
+  vdef11 = VDEF(vname='max_out', rpn='%s,MAXIMUM' % cdef1.vname)
+  vdef12 = VDEF(vname='avg_out', rpn='%s,AVERAGE' % cdef1.vname)
+  vdef21 = VDEF(vname='max_in', rpn='%s,MAXIMUM' % cdef2.vname)
+  vdef22 = VDEF(vname='avg_in', rpn='%s,AVERAGE' % cdef2.vname)
+  vdef31 = VDEF(vname='max_request', rpn='%s,MAXIMUM' % def3.vname)
+  vdef32 = VDEF(vname='avg_request', rpn='%s,AVERAGE' % def3.vname)
   
-#  cdef = CDEF(vname='outbits', rpn='%s,8,*' % def1.vname)
-#  vdef = VDEF(vname='max', rpn='%s,MAXIMUM' % cdef.vname)
-#  vdef = VDEF(vname='avg', rpn='%s,AVERAGE' % cdef.vname)
-#  vdef3 = VDEF(vname='min', rpn='%s,MINIMUM' % cdef.vname)
-  line1 = LINE(1, defObi=def1, color='#2029CC', legend='Out traffic')
-  line2 = LINE(1, defObi=def2, color='#00FF00', legend='In traffic')
-  line3 = LINE(1, defObi=def3, color='#FF0000', legend='Requests')
-  gprint = GPRINT(vdef, 'Max\\: %5.1lf %Sbps')
+  line1 = LINE(2, defObj=def1, color='#2029CC', legend='Out traffic')
+  line2 = LINE(2, defObj=def2, color='#00FF00', legend='In traffic\\n')
+  line3 = LINE(2, defObj=def3, color='#FF0000', legend='Requests\\n')
+  gprint11 = GPRINT(vdef11, 'Max_out\\: %5.1lf %Sbps')
+  gprint12 = GPRINT(vdef12, 'Avg_out\\: %5.1lf %Sbps\\n')
+  gprint21 = GPRINT(vdef21, 'Max_in\\: %5.1lf %Sbps')
+  gprint22 = GPRINT(vdef22, 'Avg_in\\: %5.1lf %Sbps')
+  gprint31 = GPRINT(vdef31, 'Max_request\\: %5.1lf %S')
+  gprint32 = GPRINT(vdef32, 'Avg_request\\: %5.1lf %S')
   
-  
-#  gprint = GPRINT(vdef, 'Max\\: %5.1lf %Sbps')
-#  gprint = GPRINT(vdef, 'Avg\\: %5.1lf %Sbps')
-#  gprint3 = GPRINT(vdef3, 'Min\\: %5.1lf %Sbps')
   
   # ColorAttributes
   ca = ColorAttributes()
@@ -101,8 +121,8 @@ def draw_graph(data):
   
 ## graph traffic
   g = Graph(graphfile_traffic, end=endTime, vertical_label='Bytes/s', color=ca)
-  g.data.extend([def1, def2, line1, line2, cdef, vdef, gprint])
-  g.title = '"report traffic"'
+  g.data.extend([def1, def2, line1, line2, cdef1, cdef2, vdef11, vdef12, vdef21, vdef22, gprint11, gprint12, gprint21, gprint22])
+  g.title = '"report traffic %s"'%group
   
   g.start=endTime - delta
   g.step = step
@@ -117,8 +137,8 @@ def draw_graph(data):
 
 ## graph request
   g1 = Graph(graphfile_request, end=endTime, vertical_label='Request/s', color=ca)
-  g1.data.extend([def3, line3])
-  g1.title = '"report request"'
+  g1.data.extend([def3, vdef31, vdef32, line3, gprint31, gprint32])
+  g1.title = '"report request %s"'%group
 
   g1.start=endTime - delta
   g1.step = step
@@ -152,7 +172,7 @@ def draw_total(res):
   half = 365 * day / 2
   year = 365 * day
   delta = 10 * hour
-  step = 10
+  step = 1
   endTime = int(time.time())
   startTime = endTime - 360000
   maxSteps = int((endTime-startTime)/step)
@@ -193,9 +213,9 @@ def draw_total(res):
   cdef = CDEF(vname='totaloutbits', rpn='%s,8,*' % def1.vname)
   vdef = VDEF(vname='max', rpn='%s,MAXIMUM' % cdef.vname)
   
-  line1 = LINE(1, defObi=def1, color='#2029CC', legend='Total Out traffic')
-  line2 = LINE(1, defObi=def2, color='#00FF00', legend='Total In traffic')
-  line3 = LINE(1, defObi=def3, color='#FF0000', legend='Total Requests')
+  line1 = LINE(1, defObj=def1, color='#2029CC', legend='Total Out traffic')
+  line2 = LINE(1, defObj=def2, color='#00FF00', legend='Total In traffic')
+  line3 = LINE(1, defObj=def3, color='#FF0000', legend='Total Requests')
   gprint = GPRINT(vdef, 'Max\\: %5.1lf %Sbps')
   
   # ColorAttributes

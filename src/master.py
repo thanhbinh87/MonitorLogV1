@@ -28,13 +28,13 @@ def parse_log(line=None):
      
   m = pattern.match(line)
   res = m.groupdict()
-  print res
+#  print res
   res["status"] = int(res["status"])
   res["group"] = res["request"].split('?')[-1].split('&')[0].split('=')[-1]
   
   res["bytes_out"] = int(res["bytes_out"])
   res["time_used"] = int(res["time_used"])
-  print res["group"]
+#  print res["group"]
   if res["size"] == "-":
     res["size"] = 0
   else:
@@ -60,7 +60,7 @@ def fetch_logs():
   log_file = "%s/%02d/%02d/%02d/%02d" % (t.year, t.month, t.day, t.hour, t.minute)
   for ip in settings.servers:
     url = 'http://%s:2309/fetch/%s/access.log' % (ip, log_file)
-#    print url
+    print url
     data = urllib.urlopen(url).read()
     if data != '':
       lines = data.split("\n")
