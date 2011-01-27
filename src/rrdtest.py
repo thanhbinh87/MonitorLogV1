@@ -32,7 +32,7 @@ def draw_graph(data, group):
   year = 365 * day
   delta = settings.delta * hour
   step = 1
-  endTime = int(time.time())
+  endTime = int(time.time()) - 600
   startTime = endTime - 360000
   maxSteps = int((endTime-startTime)/step)
   
@@ -82,8 +82,8 @@ def draw_graph(data, group):
     print bytes_out/1000000
     myRRD.bufferValue(times, bytes_out, bytes_in, requests)
     if counter % 100 == 0:
-      myRRD.update(debug=False)
-  myRRD.update(debug=False)
+      myRRD.update(debug=True)
+  myRRD.update(debug=True)
   
   ## RRD graph
   
@@ -129,7 +129,7 @@ def draw_graph(data, group):
   g.step = step
   g.width = 397
   g.height = 182
-  g.write(debug=False)
+  g.write(debug=True)
   
 #  g.filename = graphfileLg_traffic
 #  g.width = 800
@@ -174,7 +174,7 @@ def draw_total(res):
   year = 365 * day
   delta = settings.delta * hour
   step = 1
-  endTime = int(time.time())
+  endTime = int(time.time()) - 600
   startTime = endTime - 360000
   maxSteps = int((endTime-startTime)/step)
   
@@ -203,11 +203,12 @@ def draw_total(res):
     total_bytes_out = int(i['total_bytes_out']) 
     total_requests = int(i['total_request']) 
     t_times = int(i['time']) 
+    print total_bytes_out/1000000
     myRRD.bufferValue('%d:%d:%d:%d'%(t_times, total_bytes_out, total_bytes_in, total_requests))
     if counter % 100 == 0:
-      myRRD.update(debug=False)
+      myRRD.update(debug=True)
 #  print lists
-  myRRD.update(debug=False)
+  myRRD.update(debug=True)
   
   
   ## RRD graph

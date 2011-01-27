@@ -19,13 +19,3 @@ if __name__ == '__main__':
     print 'done'
     time.sleep(300) 
     
-#import time
-#from api import get_total
-#from testrrd import draw_total
-#
-#def graph(t):
-#  res = get_total(t)
-#  draw_total(res)
-#  
-#if __name__ == '__main__':
-#  graph(36000)
