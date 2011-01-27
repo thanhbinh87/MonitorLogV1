@@ -1,0 +1,49 @@
+<html>
+    <body>
+        <td bgcolor="#DDDDDD">
+        <font size="+1">
+            <b>Cluster Report for Wed, 26 Jan 2011 16:28:32 +0700</b>
+        </font>
+        </td>
+        <td colspan="1">
+        </br>
+        <b>Metric</b>&nbsp;&nbsp;
+        <select name="m" onchange="ganglia_form.submit();">
+
+            <option value="total">total
+            </option><option value="baamboo">baamboo
+            </option><option value="hosting">hosting
+            </option><option value="flv">flv
+            </option>
+        </select>
+        &nbsp;&nbsp;
+        <b>Last</b>&nbsp;&nbsp;
+        <select name="r" onchange="ganglia_form.submit();">
+            <option value="hour" selected="">hour
+            </option><option value="day">day
+            </option><option value="week">week
+            </option><option value="month">month
+            </option><option value="year">year
+            </option>
+        </select>
+        &nbsp;&nbsp;
+        <b>Sorted</b>&nbsp;&nbsp;
+        <select name="s" onchange="ganglia_form.submit();">
+            <option value="ascending">ascending
+            </option><option value="descending" selected="">descending
+            </option><option value="by%20name">by name
+            </option>
+        </select>
+        </td>
+        <td rowspan="2" align="CENTER" valign="top">
+        </br>
+
+        <a href="./graph.php?g=load_report&amp;z=large&amp;c=HostingMedia&amp;m=&amp;r=hour&amp;s=descending&amp;hc=4&amp;st=1296034928">
+        <img border="0" alt="HostingMedia LOAD" src="./graph.php?g=load_report&amp;z=medium&amp;c=HostingMedia&amp;m=&amp;r=hour&amp;s=descending&amp;hc=4&amp;st=1296034928">
+        </a>
+        <a href="./graph.php?g=cpu_report&amp;z=large&amp;c=HostingMedia&amp;m=&amp;r=hour&amp;s=descending&amp;hc=4&amp;st=1296034928">
+        <img border="0" alt="HostingMedia CPU" src="./graph.php?g=cpu_report&amp;z=medium&amp;c=HostingMedia&amp;m=&amp;r=hour&amp;s=descending&amp;hc=4&amp;st=1296034928">
+        </a>
+        </td>
+    </body>
+</html>

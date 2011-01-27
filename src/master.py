@@ -1,12 +1,8 @@
 #! coding: utf-8
 # pylint: disable-msg=W0311
-import urllib
 import time
 import re
-import datetime
-
-import api
-import settings
+import tasklog
 
 def parse_log(line=None):
   if line is None:
@@ -28,13 +24,11 @@ def parse_log(line=None):
      
   m = pattern.match(line)
   res = m.groupdict()
-#  print res
   res["status"] = int(res["status"])
-  res["group"] = res["request"].split('?')[-1].split('&')[0].split('=')[-1]
-  
+  res["group"] = res["request"].split('?')[-1].split('&')[0].split('=')[-1]  
   res["bytes_out"] = int(res["bytes_out"])
   res["time_used"] = int(res["time_used"])
-#  print res["group"]
+  
   if res["size"] == "-":
     res["size"] = 0
   else:
@@ -50,29 +44,15 @@ def parse_log(line=None):
 
   tt = time.strptime(res["time"][:-6], "%d/%b/%Y:%H:%M:%S")
   res["time"] = int(time.mktime(tt))
-#  print res['time']
+  
   return res
-
-
-def fetch_logs():
-  delta = datetime.timedelta(minutes=1)
-  t = datetime.datetime.now() - delta
-  log_file = "%s/%02d/%02d/%02d/%02d" % (t.year, t.month, t.day, t.hour, t.minute)
-  for ip in settings.servers:
-    url = 'http://%s:2309/fetch/%s/access.log' % (ip, log_file)
-    print url
-    data = urllib.urlopen(url).read()
-    if data != '':
-      lines = data.split("\n")
-      for line in lines:
-        if line != '':
-          params = parse_log(line)
-          print params['time']
-          api.insert(params)
-    # TODO: delete log
-  return True
 
 if __name__ == "__main__":
   while True:
-    fetch_logs()
-    time.sleep(60)
+    if int(time.time()) % 60 == 0:
+      print 'process'
+      tasklog.fetch_logs.delay()
+    print 'sleeping...'
+    time.sleep(1)
+    print 'done'
+  

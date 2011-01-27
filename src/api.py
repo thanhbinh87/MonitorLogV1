@@ -24,12 +24,10 @@ def insert(info):
   bytes_in = info.get('bytes_in') / (time_used + 1)
   group = info.get('group')
   for i in time_list:
-    GRAPH.update({"time": time, 'group': group}, 
+    GRAPH.update({"time": i, 'group': group}, 
                     {"$inc": {"bytes_out": bytes_out,
                               "bytes_in": bytes_in,
-                              'request': 1}}, 
-                    upsert=True)
-
+                              'request': 1}}, upsert = True)
   return DATABASE.insert(info)
 
 def get_total(t):
