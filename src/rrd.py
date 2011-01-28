@@ -10,6 +10,7 @@ from pyrrd.graph import DEF, VDEF
 from pyrrd.graph import LINE, GPRINT
 from pyrrd.graph import ColorAttributes, Graph
 import settings
+import time
 
 def ds():
   dss = []
@@ -28,8 +29,10 @@ def rra():
   return rras
 
 def rrdcreate(rrdname):
+  endTime = int(time.time()) - 600
+  starttime = endTime - 360000
   myrrd = RRD(filename=rrdname, step=settings.step, ds=ds(), \
-              rra=rra(), start=settings.starttime)
+              rra=rra(), start=starttime)
   myrrd.create(debug=False)
   return myrrd
 
@@ -62,8 +65,7 @@ def color():
 
 def vdef(rrdfile, trafficname, requestname):
   ###
-  step = settings.step
-  end = settings.endTime
+  
   ### def
   def_out = DEF(rrdfile=rrdfile, vname='out', dsName='out')
   def_in = DEF(rrdfile=rrdfile, vname='in', dsName='in')
@@ -88,10 +90,14 @@ def vdef(rrdfile, trafficname, requestname):
   gprint_request2 = GPRINT(vdef_request2, 'avg\\: %5.1lf %S\\n')
   ###
 #  for delta in settings.DELTA:
-  delta = settings.DELTA
-  start = settings.endTime - delta
+  hour = 60 * 60
+  day = 24 * 60 * 60
+  step = settings.step
+  endTime = int(time.time()) - 600
+  delta = 1 * hour
+  start = endTime - delta
   ### traffic
-  g_traffic = Graph(trafficname, step=step, start=start, end=end, \
+  g_traffic = Graph(trafficname, step=step, start=start, end=endTime, \
                     vertical_label='Bytes/s', color=color())
   g_traffic.data.extend([def_out, def_in, \
                          vdef_out1, vdef_out2, vdef_in1, vdef_in2, \
@@ -100,7 +106,7 @@ def vdef(rrdfile, trafficname, requestname):
   g_traffic.title = '"report traffic "'
   g_traffic.write(debug=True)
   ### request
-  g_request = Graph(requestname, step=step, start=start, end=end, \
+  g_request = Graph(requestname, step=step, start=start, end=endTime, \
                     vertical_label='Requests/s', color=color())
   g_request.data.extend([def_request, vdef_request1, vdef_request2, \
                          line_request, gprint_request1, gprint_request2])
