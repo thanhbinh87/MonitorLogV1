@@ -14,11 +14,12 @@ import datetime
 import urllib
 @task
 def fetch_logs():
+  """fetch_log and insert to db"""
   delta = datetime.timedelta(minutes=1)
   t = datetime.datetime.now() - delta
-  print t
-  log_file = "%s/%02d/%02d/%02d/%02d" % (t.year, t.month, t.day, t.hour, t.minute)
-  for ip in settings.servers:   
+  log_file = "%s/%02d/%02d/%02d/%02d" \
+              % (t.year, t.month, t.day, t.hour, t.minute)
+  for ip in settings.SERVERS:   
     url = 'http://%s:2309/fetch/%s/access.log' % (ip, log_file)
     print url
     data = urllib.urlopen(url).read()
@@ -27,7 +28,5 @@ def fetch_logs():
       for line in lines:
         if line != '':
           params = parse_log(line)
-          print line
           api.insert(params)
-    # TODO: delete log
   return True

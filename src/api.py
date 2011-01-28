@@ -10,12 +10,11 @@ import pymongo
 import settings
 
 
-DATABASE = pymongo.Connection(settings.mongodb_nodes).infoging.info
-GRAPH = pymongo.Connection(settings.mongodb_nodes).infoging.graph
-EXAM = pymongo.Connection(settings.mongodb_nodes).infoging.example
+DATABASE = pymongo.Connection(settings.MONGODB_NODE).infoging.info
+GRAPH = pymongo.Connection(settings.MONGODB_NODE).infoging.graph
 
 def insert(info):
-  # insert to database
+  """ insert to database"""
   
   time = info.get('time')
   time_used = info.get('time_used')
@@ -31,20 +30,20 @@ def insert(info):
   return DATABASE.insert(info)
 
 def get_total(t):
-  # mongodb group by
-  
+  """ mongodb group by """
   t0 = int(time.time())
   t1 = t0 - t
   res = GRAPH.group(key={"time": True},
   condition={"time": {"$gte": t1}},
-  initial={'total_bytes_out': 0, 'total_bytes_in': 0, 'total_request': 0},
-  reduce="function(info, prev) { prev.total_bytes_out += info.bytes_out; prev.total_bytes_in +=info.bytes_in; prev.total_request += info.request }"
+  initial={'bytes_out': 0, 'bytes_in': 0, 'request': 0},
+  reduce="function(info, prev) { prev.bytes_out += info.bytes_out; \
+  prev.bytes_in +=info.bytes_in; prev.request += info.request }"
   )
   res.sort(key=lambda k: k['time'])
   return res
 
 def get_stats(group, t):
-  # mongodb time, group
+  """ mongodb time, group"""
   
   t0 = int(time.time())
   t1 = t0 - t

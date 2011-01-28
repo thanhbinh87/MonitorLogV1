@@ -1,13 +1,17 @@
+'''
+Created on Dec 29, 2010
+
+@author: rucney
+'''
 #! coding: utf-8
-# pylint: disable-msg=W0311
+# pylint: disable-msg=W0311, E1101
 import time
 import re
 import tasklog
 
 def parse_log(line=None):
-  if line is None:
-    line = '127.0.0.1 [29/Dec/2010:10:17:15 +0700] "GET /4ff0e9dd51eb395d243a6668109cd46d.mp3?group=baamboo&filetype=mp3 HTTP/1.1" 304 0 "http://ovenbirds.dev/" "Mozilla/5.0 (X11; U; Linux x86_64; en-US) AppleWebKit/534.10 (KHTML, like Gecko) Chrome/8.0.552.224 Safari/534.10" 475 204 3'
- 
+  """ parse log :{time:bytes_out:bytes_in:group...}"""
+  
   parts = [
       r'(?P<remote_host>\S+)',            # host %h
       r'\[(?P<time>.+)\]',                # time %t
@@ -50,9 +54,7 @@ def parse_log(line=None):
 if __name__ == "__main__":
   while True:
     if int(time.time()) % 60 == 0:
-      print 'process'
-      tasklog.fetch_logs.delay()
-    print 'sleeping...'
+      tasklog.fetch_logs.delay() #@UndefinedVariable
     time.sleep(1)
     print 'done'
   

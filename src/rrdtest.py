@@ -30,7 +30,7 @@ def draw_graph(data, group):
   quarter = month * 3
   half = 365 * day / 2
   year = 365 * day
-  delta = settings.delta * hour
+  delta = settings.DELTA * hour
   step = 1
   endTime = int(time.time()) - 600
   startTime = endTime - 360000
@@ -42,7 +42,7 @@ def draw_graph(data, group):
 #  Counter:Use this format with value of snmp MIB like traffic counter or 
 #  packet number for a interface. 
 #  Gauge:Use this format for value like temperature,  indicator of pressure.
-#  Derive:Use this format if you variation or delta between a moment and 
+#  Derive:Use this format if you variation or settings.DELTA between a moment and 
 #  an another moment like the rate of of people entering or leaving a
 #  room and derive works exactly like COUNTER but without overflow checks.
 #  Absolute:Use this format when you count the number of mail after an alert. 
@@ -141,7 +141,7 @@ def draw_graph(data, group):
   g1.data.extend([def3, vdef31, vdef32, line3, gprint31, gprint32])
   g1.title = '"report request %s"'%group
 
-  g1.start=endTime - delta
+  g1.start=endTime - settings.DELTA
   g1.step = step
   g1.width = 397
   g1.height = 182
@@ -172,7 +172,7 @@ def draw_total(res):
   quarter = month * 3
   half = 365 * day / 2
   year = 365 * day
-  delta = settings.delta * hour
+  delta = settings.DELTA * hour
   step = 1
   endTime = int(time.time()) - 600
   startTime = endTime - 360000
@@ -196,7 +196,6 @@ def draw_total(res):
   
   ## RRD update
   counter = 0
-#  lists = []
   for i in res:
     counter += 1
     total_bytes_in = int(i['total_bytes_in']) 
@@ -204,10 +203,9 @@ def draw_total(res):
     total_requests = int(i['total_request']) 
     t_times = int(i['time']) 
     print total_bytes_out/1000000
-    myRRD.bufferValue('%d:%d:%d:%d'%(t_times, total_bytes_out, total_bytes_in, total_requests))
+    myRRD.bufferValue(t_times, total_bytes_out, total_bytes_in, total_requests)
     if counter % 100 == 0:
       myRRD.update(debug=True)
-#  print lists
   myRRD.update(debug=True)
   
   
@@ -261,6 +259,7 @@ def draw_total(res):
   g.title = '"report total traffic"'
 
   g.start = endTime - delta
+  
   g.step = step
   g.width = 397
   g.height = 182
@@ -276,7 +275,7 @@ def draw_total(res):
   g1.data.extend([def3, vdef31, vdef32, line3, gprint31, gprint32])
   g1.title = '"report total request"'
 
-  g1.start = endTime - delta
+  g1.start = endTime - settings.DELTA
   g1.step = step
   g1.width = 397
   g1.height = 182
